@@ -8,8 +8,14 @@ app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 
+// just for avoid warning!
+const avoidWarning = (req) => {
+    console.log(req.route);
+};
+
 app.get('/', (req, res) => {
-    res.send('Warehouse Management at server side done!');
+    avoidWarning(req);
+    res.send('Warehouse Management at server side running!');
 })
 
 app.listen(port, () => {

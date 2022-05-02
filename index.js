@@ -27,11 +27,21 @@ async function run() {
         const productCollection = client.db("warehouseManagement").collection("product");
         console.log('MongoDB connected!');
 
+        // get all products
         app.get('/product', async (req, res) => {
             const query = {};
             const cursor = productCollection.find(query);
-            const result = await cursor.toArray();
-            res.send(result);
+            const products = await cursor.toArray();
+            res.send(products);
+        })
+
+        // count all products
+        app.get('/productCount', async (req, res) => {
+            const query = {};
+            const cursor = productCollection.find(query);
+            const productCount = await cursor.count();
+            res.send({ count: productCount }); // 1. same as 2 but form as object:, output => 'count': 50
+            // res.json(count); // 2. same as 1 but form as json, output => 50
         })
     } finally {
         // await client.close()

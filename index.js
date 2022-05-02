@@ -29,11 +29,22 @@ async function run() {
 
         // get all products
         app.get('/product', async (req, res) => {
+            // console.log(req.query);
+            const pageNumber = parseInt(req.query.pageNumber);
+            const viewItems = parseInt(req.query.viewItems);
+
             const query = {};
             const cursor = productCollection.find(query);
-            const products = await cursor.toArray();
+            let products;
+
+            if (pageNumber || viewItems) {
+                products = await cursor.skip(pageNumber * viewItems).limit(viewItems).toArray();
+            } else {
+                products = await cursor.toArray();
+            }
+
             res.send(products);
-        })
+        });
 
         // count all products
         app.get('/productCount', async (req, res) => {
@@ -42,7 +53,7 @@ async function run() {
             const productCount = await cursor.count();
             res.send({ count: productCount }); // 1. same as 2 but form as object:, output => 'count': 50
             // res.json(count); // 2. same as 1 but form as json, output => 50
-        })
+        });
     } finally {
         // await client.close()
     }

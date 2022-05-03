@@ -1,4 +1,4 @@
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -49,7 +49,7 @@ async function run() {
         // get my added product
         app.get('/myItems', async (req, res) => {
             avoidWarning(req);
-            
+
             const query = {};
             const cursor = myItemsCollection.find(query);
             const products = await cursor.toArray();
@@ -71,6 +71,14 @@ async function run() {
         app.post('/addProduct', async (req, res) => {
             const doc = req.body;
             const result = await myItemsCollection.insertOne(doc);
+            res.send(result);
+        });
+
+        // delete a product
+        app.delete('/myItems/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await myItemsCollection.deleteOne(query);
             res.send(result);
         });
 

@@ -25,11 +25,11 @@ async function run() {
         await client.connect();
 
         const productCollection = client.db("warehouseManagement").collection("product");
+        const myItemsCollection = client.db("warehouseManagement").collection("myItems");
         console.log('MongoDB connected!');
 
         // get all products
         app.get('/product', async (req, res) => {
-            // console.log(req.query);
             const pageNumber = parseInt(req.query.pageNumber);
             const viewItems = parseInt(req.query.viewItems);
 
@@ -46,14 +46,34 @@ async function run() {
             res.send(products);
         });
 
+        // get my added product
+        app.get('/myItems', async (req, res) => {
+            avoidWarning(req);
+            
+            const query = {};
+            const cursor = myItemsCollection.find(query);
+            const products = await cursor.toArray();
+            res.send(products);
+        })
+
         // count all products
         app.get('/productCount', async (req, res) => {
+            avoidWarning(req);
+
             const query = {};
             const cursor = productCollection.find(query);
             const productCount = await cursor.count();
             res.send({ count: productCount }); // 1. same as 2 but form as object:, output => 'count': 50
             // res.json(count); // 2. same as 1 but form as json, output => 50
         });
+
+        // add a product
+        app.post('/addProduct', async (req, res) => {
+            const doc = req.body;
+            const result = await myItemsCollection.insertOne(doc);
+            res.send(result);
+        });
+
     } finally {
         // await client.close()
     }

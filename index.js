@@ -82,6 +82,39 @@ async function run() {
             res.send(result);
         });
 
+        // update a product's segment
+        app.put('/product/:id', async (req, res) => {
+            const updateProduct = req.body;
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const option = { upsert: true };
+            const updateDoc = {
+                $set: {
+                    img: updateProduct.img,
+                    name: updateProduct.name,
+                    price: updateProduct.price
+                }
+            }
+            const result = await productCollection.updateOne(filter, updateDoc, option);
+            res.send(result);
+        });
+
+        app.put('/myItems/:id', async (req, res) => {
+            const updateProduct = req.body;
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const option = { upsert: true };
+            const updateDoc = {
+                $set: {
+                    img: updateProduct.img,
+                    name: updateProduct.name,
+                    price: updateProduct.price
+                }
+            }
+            const result = await myItemsCollection.updateOne(filter, updateDoc, option);
+            res.send(result);
+        });
+
     } finally {
         // await client.close()
     }

@@ -67,6 +67,16 @@ async function run() {
             // res.json(count); // 2. same as 1 but form as json, output => 50
         });
 
+        // count all custom product
+        app.get('/itemsCount', async (req, res) => {
+            avoidWarning(req);
+
+            const query = {};
+            const cursor = myItemsCollection.find(query);
+            const itemsCount = await cursor.count();
+            res.send({ count: itemsCount });
+        })
+
         // add a product
         app.post('/addProduct', async (req, res) => {
             const doc = req.body;

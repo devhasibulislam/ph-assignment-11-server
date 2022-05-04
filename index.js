@@ -89,11 +89,7 @@ async function run() {
             const filter = { _id: ObjectId(id) };
             const option = { upsert: true };
             const updateDoc = {
-                $set: {
-                    img: updateProduct.img,
-                    name: updateProduct.name,
-                    price: updateProduct.price
-                }
+                $set: updateProduct
             }
             const result = await productCollection.updateOne(filter, updateDoc, option);
             res.send(result);

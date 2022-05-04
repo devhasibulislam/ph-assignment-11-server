@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 require('dotenv').config();
+var jwt = require('jsonwebtoken');
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -28,6 +29,15 @@ async function run() {
         const myItemsCollection = client.db("warehouseManagement").collection("myItems");
         console.log('MongoDB connected!');
 
+        // use AUTH for extra security for DB API
+        app.post('/login', async (req, res) => {
+            const user = req.body;
+            const token = jwt.sign(user, process.env.PRIVATE_KEY, {
+                expiresIn: "7d"
+            });
+            res.send({ token });
+        })
+
         // get all products
         app.get('/product', async (req, res) => {
             const pageNumber = parseInt(req.query.pageNumber);
@@ -48,13 +58,34 @@ async function run() {
 
         // get my added product
         app.get('/myItems', async (req, res) => {
-            avoidWarning(req);
+            // console.log(req.query);
+            const pageNumber = parseInt(req.query.pageNumber);
+            const viewItems = parseInt(req.query.viewItems);
+            const email = req.query.email;
 
+            // const query = {email};
             const query = {};
             const cursor = myItemsCollection.find(query);
-            const products = await cursor.toArray();
+            let products;
+
+            if (pageNumber || viewItems) {
+                products = await cursor.skip(pageNumber * viewItems).limit(viewItems).toArray();
+            } else {
+                products = await cursor.toArray();
+            }
+
             res.send(products);
         })
+
+        // optional as a whole of test
+        app.get('/order', async (req, res) => {
+            const email = req.query.email;
+            const query = {email};
+            const cursor = myItemsCollection.find(query);
+            const orders = await cursor.toArray();
+            res.send(orders);
+        })
+        // ===========================
 
         // count all products
         app.get('/productCount', async (req, res) => {
@@ -105,17 +136,14 @@ async function run() {
             res.send(result);
         });
 
+        // update a custom product's segment
         app.put('/myItems/:id', async (req, res) => {
             const updateProduct = req.body;
             const id = req.params.id;
             const filter = { _id: ObjectId(id) };
             const option = { upsert: true };
             const updateDoc = {
-                $set: {
-                    img: updateProduct.img,
-                    name: updateProduct.name,
-                    price: updateProduct.price
-                }
+                $set: updateProduct
             }
             const result = await myItemsCollection.updateOne(filter, updateDoc, option);
             res.send(result);

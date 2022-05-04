@@ -27,6 +27,7 @@ async function run() {
 
         const productCollection = client.db("warehouseManagement").collection("product");
         const myItemsCollection = client.db("warehouseManagement").collection("myItems");
+        const qnaCollection = client.db("warehouseManagement").collection("qna");
         console.log('MongoDB connected!');
 
         // use AUTH for extra security for DB API
@@ -148,6 +149,14 @@ async function run() {
             const result = await myItemsCollection.updateOne(filter, updateDoc, option);
             res.send(result);
         });
+
+        // get qna
+        app.get('/qna', async (req, res) => {
+            const query = {};
+            const cursor = qnaCollection.find(query);
+            const blog = await cursor.toArray();
+            res.send(blog);
+        })
 
     } finally {
         // await client.close()

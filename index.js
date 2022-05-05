@@ -40,7 +40,7 @@ async function run() {
             });
 
             res.send({ token });
-        })
+        });
 
         // get all products
         app.get('/product', async (req, res) => {
@@ -69,7 +69,7 @@ async function run() {
             const products = await cursor.toArray();
 
             res.send(products);
-        })
+        });
 
         // get my added product as myItems product's view
         app.get('/order', async (req, res) => {
@@ -79,7 +79,7 @@ async function run() {
             const orders = await cursor.toArray();
 
             res.send(orders);
-        })
+        });
 
         // count all products
         app.get('/productCount', async (req, res) => {
@@ -102,7 +102,7 @@ async function run() {
             const itemsCount = await cursor.count();
 
             res.send({ count: itemsCount });
-        })
+        });
 
         // add a custom product
         app.post('/addProduct', async (req, res) => {
@@ -158,7 +158,7 @@ async function run() {
             const blog = await cursor.toArray();
 
             res.send(blog);
-        })
+        });
 
     } finally {
         // await client.close()

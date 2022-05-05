@@ -25,12 +25,13 @@ async function run() {
     try {
         await client.connect();
 
+        // own following database
         const productCollection = client.db("warehouseManagement").collection("product");
         const myItemsCollection = client.db("warehouseManagement").collection("myItems");
         const qnaCollection = client.db("warehouseManagement").collection("qna");
         console.log('MongoDB connected!');
 
-        // use AUTH for extra security for DB API
+        // use AUTH for extra security for login
         app.post('/login', async (req, res) => {
             const user = req.body;
             const token = jwt.sign(user, process.env.PRIVATE_KEY, {
@@ -62,9 +63,6 @@ async function run() {
             // console.log(req.query);
             const pageNumber = parseInt(req.query.pageNumber);
             const viewItems = parseInt(req.query.viewItems);
-            const email = req.query.email;
-
-            // const query = {email};
             const query = {};
             const cursor = myItemsCollection.find(query);
             let products;
@@ -78,15 +76,14 @@ async function run() {
             res.send(products);
         })
 
-        // optional as a whole of test
+        // get my added product
         app.get('/order', async (req, res) => {
             const email = req.query.email;
-            const query = {email};
+            const query = { email };
             const cursor = myItemsCollection.find(query);
             const orders = await cursor.toArray();
             res.send(orders);
         })
-        // ===========================
 
         // count all products
         app.get('/productCount', async (req, res) => {
@@ -109,14 +106,14 @@ async function run() {
             res.send({ count: itemsCount });
         })
 
-        // add a product
+        // add a custom product
         app.post('/addProduct', async (req, res) => {
             const doc = req.body;
             const result = await myItemsCollection.insertOne(doc);
             res.send(result);
         });
 
-        // delete a product
+        // delete a custom product
         app.delete('/myItems/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };

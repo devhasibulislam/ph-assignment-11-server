@@ -1,9 +1,10 @@
-const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-require('dotenv').config();
 var jwt = require('jsonwebtoken');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+require('dotenv').config();
+
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -37,6 +38,7 @@ async function run() {
             const token = jwt.sign(user, process.env.PRIVATE_KEY, {
                 expiresIn: "7d"
             });
+
             res.send({ token });
         })
 
@@ -60,28 +62,22 @@ async function run() {
 
         // get my added product
         app.get('/myItems', async (req, res) => {
-            // console.log(req.query);
-            const pageNumber = parseInt(req.query.pageNumber);
-            const viewItems = parseInt(req.query.viewItems);
+            avoidWarning(req);
+
             const query = {};
             const cursor = myItemsCollection.find(query);
-            let products;
-
-            if (pageNumber || viewItems) {
-                products = await cursor.skip(pageNumber * viewItems).limit(viewItems).toArray();
-            } else {
-                products = await cursor.toArray();
-            }
+            const products = await cursor.toArray();
 
             res.send(products);
         })
 
-        // get my added product
+        // get my added product as myItems product's view
         app.get('/order', async (req, res) => {
             const email = req.query.email;
             const query = { email };
             const cursor = myItemsCollection.find(query);
             const orders = await cursor.toArray();
+
             res.send(orders);
         })
 
@@ -92,6 +88,7 @@ async function run() {
             const query = {};
             const cursor = productCollection.find(query);
             const productCount = await cursor.count();
+
             res.send({ count: productCount }); // 1. same as 2 but form as object:, output => 'count': 50
             // res.json(count); // 2. same as 1 but form as json, output => 50
         });
@@ -103,6 +100,7 @@ async function run() {
             const query = {};
             const cursor = myItemsCollection.find(query);
             const itemsCount = await cursor.count();
+
             res.send({ count: itemsCount });
         })
 
@@ -110,6 +108,7 @@ async function run() {
         app.post('/addProduct', async (req, res) => {
             const doc = req.body;
             const result = await myItemsCollection.insertOne(doc);
+
             res.send(result);
         });
 
@@ -118,6 +117,7 @@ async function run() {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
             const result = await myItemsCollection.deleteOne(query);
+
             res.send(result);
         });
 
@@ -129,8 +129,10 @@ async function run() {
             const option = { upsert: true };
             const updateDoc = {
                 $set: updateProduct
-            }
+            };
+
             const result = await productCollection.updateOne(filter, updateDoc, option);
+
             res.send(result);
         });
 
@@ -142,8 +144,10 @@ async function run() {
             const option = { upsert: true };
             const updateDoc = {
                 $set: updateProduct
-            }
+            };
+
             const result = await myItemsCollection.updateOne(filter, updateDoc, option);
+
             res.send(result);
         });
 
@@ -152,6 +156,7 @@ async function run() {
             const query = {};
             const cursor = qnaCollection.find(query);
             const blog = await cursor.toArray();
+
             res.send(blog);
         })
 
@@ -163,6 +168,7 @@ run().catch(console.dir);
 
 app.get('/', (req, res) => {
     avoidWarning(req);
+
     res.send('Warehouse Management at server side running!');
 })
 

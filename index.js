@@ -18,6 +18,27 @@ const avoidWarning = (req) => {
     console.log(req.route);
 };
 
+// adding next level security to db api conduct with ui
+function verifyJWY(req, res, next) {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader) {
+        return res.status(401).send({ message: 'unauthorized access' });
+    }
+
+    const token = authHeader.split(' ')[1];
+    jwt.verify(token, process.env.PRIVATE_KEY, (err, decoded) => {
+        if (err) {
+            return res.status(403).send({ message: 'forbidden access' });
+        }
+        // console.log(decoded);
+        req.decoded = decoded;
+        next();
+    })
+
+    // console.log("inside verifyJWT", authHeader);
+}
+
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.uumdg.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
@@ -72,14 +93,31 @@ async function run() {
         });
 
         // get my added product as myItems product's view
-        app.get('/order', async (req, res) => {
+        // user secured by email and password
+        app.get('/order', verifyJWY, async (req, res) => {
+            const decodedEmail = req.decoded.email;
+            const email = req.query.email;
+            if (email === decodedEmail) {
+                const query = { email };
+                const cursor = myItemsCollection.find(query);
+                const orders = await cursor.toArray();
+
+                res.send(orders);
+            } else {
+                res.status(403).send({ message: 'forbidden access' });
+            }
+        });
+
+        // get my added product as myItems product's view
+        // only profiled by google.com
+        app.get('/item', async (req, res) => {
             const email = req.query.email;
             const query = { email };
             const cursor = myItemsCollection.find(query);
             const orders = await cursor.toArray();
 
             res.send(orders);
-        });
+        })
 
         // count all products
         app.get('/productCount', async (req, res) => {

@@ -11,7 +11,10 @@ const port = process.env.PORT || 5000;
 // middleware
 app.use(
   cors({
-    origin: "https://warehouse-management-7cf04.web.app",
+    origin: "*",
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
   })
 );
 app.use(bodyParser.urlencoded({ extended: false }));
